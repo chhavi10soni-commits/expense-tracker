@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Expense Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #121212;
+      color: white;
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .section {
+      background: #1e1e1e;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+    }
+
+    input, select, button {
+      padding: 6px;
+      margin: 4px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .item {
+      background: #2a2a2a;
+      padding: 6px;
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>My Expense Tracker</h2>
+
+<div class="section">
+  <input id="text" placeholder="what did you spend on">
+  <input id="money" type="number" placeholder="amount">
+  
+  <select id="type">
+    <option>Food</option>
+    <option>Travel</option>
+    <option>Shopping</option>
+    <option>Other</option>
+  </select>
+
+  <button onclick="addData()">Add</button>
+</div>
+
+<div class="section">
+  Total money spent: ₹<span id="sum">0</span>
+</div>
+
+<div class="section">
+  <canvas id="myChart"></canvas>
+</div>
+
+<div class="section">
+  <b>History</b>
+  <div id="dataList"></div>
+</div>
+
+<script>
+
+let allData = JSON.parse(localStorage.getItem("myData")) || [];
+let myChart;
+
+// adding new expense
+function addData() {
+  let t = document.getElementById("text").value;
+  let m = document.getElementById("money").value;
+  let c = document.getElementById("type").value;
+
+  if(t == "" || m == "") {
+    alert("fill all fields");
+    return;
+  }
+
+  let obj = {
+    title: t,
+    amount: Number(m),
+    category: c
+  };
+
+  allData.push(obj);
+
+  localStorage.setItem("myData", JSON.stringify(allData));
+
+  document.getElementById("text").value = "";
+  document.getElementById("money").value = "";
+
+  showData();
+}
+
+
+function showData() {
+  let list = document.getElementById("dataList");
+  list.innerHTML = "";
+
+  let total = 0;
+
+  for(let i = 0; i < allData.length; i++) {
+
+    total += allData[i].amount;
+
+    let div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+      ${allData[i].title} - ₹${allData[i].amount} (${allData[i].category})
+      <button onclick="removeItem(${i})">x</button>
+    `;
+
+    list.appendChild(div);
+  }
+
+  document.getElementById("sum").innerText = total;
+
+  drawChart();
+}
+
+
+function removeItem(index) {
+  allData.splice(index, 1);
+  localStorage.setItem("myData", JSON.stringify(allData));
+  showData();
+}
+
+// chart logic 
+function drawChart() {
+
+  let obj = {};
+
+  for(let i = 0; i < allData.length; i++) {
+    let cat = allData[i].category;
+
+    if(obj[cat]) {
+      obj[cat] += allData[i].amount;
+    } else {
+      obj[cat] = allData[i].amount;
+    }
+  }
+
+  let labels = [];
+  let values = [];
+
+  for(let key in obj) {
+    labels.push(key);
+    values.push(obj[key]);
+  }
+
+  if(myChart) {
+    myChart.destroy();
+  }
+
+  myChart = new Chart(document.getElementById("myChart"), {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [{
+        data: values
+      }]
+    }
+  });
+}
+
+
+showData();
+
+</script>
+
+</body>
+</html>

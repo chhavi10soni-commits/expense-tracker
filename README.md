@@ -3,7 +3,6 @@
 A simple and interactive Expense Tracker Web App built using HTML, CSS, and JavaScript.
 It helps users track daily expenses, categorize spending, and visualize data using charts.
 
---
 
 ## Features
 
